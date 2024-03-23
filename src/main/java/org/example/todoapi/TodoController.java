@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/todos")
@@ -33,12 +35,41 @@ public class TodoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Todo>> getTodoById(@PathVariable("id") Long id){
-        for(Todo todo: todoList){
+    public ResponseEntity<ApiResponse<Todo>> getTodoById(@PathVariable("id") int id){
+        for(Todo todo : todoList){
             if(todo.getId() == id){
                 return ResponseEntity
                         .status(HttpStatus.CREATED)
                         .body(new ApiResponse<>(todo,true,"Successfully fetched todo"));
+            }
+        }
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(null,false, "Todo not found"));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Todo>> deleteTodo(@PathVariable int id){
+        for(int i=0;i<todoList.size();i++){
+            if(todoList.get(i).getId() == id){
+                Todo deletedTodo = todoList.remove(i);
+                return ResponseEntity
+                        .ok(new ApiResponse<>(deletedTodo,true, "Successfully deleted a Todo"));
+            }
+        }
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(null,false, "Todo not found"));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<Todo>> updateTodo(@PathVariable int id, @RequestBody Todo todo){
+        for(int i=0;i<todoList.size();i++){
+            if(todoList.get(i).getId() == id){
+                todo.setId(id);
+                todoList.set(i, todo);
+                return ResponseEntity
+                        .ok(new ApiResponse<>(todo,true,"Successfully updated the todo"));
             }
         }
         return ResponseEntity
