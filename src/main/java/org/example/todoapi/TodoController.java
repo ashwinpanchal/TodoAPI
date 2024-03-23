@@ -5,9 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
+@RequestMapping("/api/v1/todos")
 public class TodoController {
     private static List<Todo> todoList;
 
@@ -17,26 +20,28 @@ public class TodoController {
         todoList.add(new Todo(2,true,"Todo 2",2));
     }
 
-    @GetMapping("/todos")
+    @GetMapping
     public ResponseEntity<List<Todo>> getTodos(){
         return ResponseEntity.ok(todoList);
     }
 
-    @PostMapping("/todos")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Todo createTodo(@RequestBody Todo newTodo){
         todoList.add(newTodo);
         return newTodo;
     }
 
-    @GetMapping("/todos/{id}")
-    public ResponseEntity<Todo> getTodoById(@PathVariable("id") Long id){
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getTodoById(@PathVariable("id") Long id){
         for(Todo todo: todoList){
             if(todo.getId() == id){
                 return ResponseEntity.ok(todo);
             }
         }
-        return ResponseEntity.notFound().build();
+        Map<String,String> response = new HashMap<>();
+        response.put("message", "Todo Not Found");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
 }
