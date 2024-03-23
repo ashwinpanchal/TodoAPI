@@ -5,9 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/todos")
@@ -21,27 +19,30 @@ public class TodoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Todo>> getTodos(){
-        return ResponseEntity.ok(todoList);
+    public ResponseEntity<ApiResponse<List<Todo>>> getTodos(){
+        return ResponseEntity
+                .ok(new ApiResponse<>(todoList,true,"Successfully fetched todo list"));
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Todo createTodo(@RequestBody Todo newTodo){
+    public ResponseEntity<ApiResponse<Todo>> createTodo(@RequestBody Todo newTodo){
         todoList.add(newTodo);
-        return newTodo;
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new ApiResponse<>(newTodo,true,"Successfully created a new Todo"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTodoById(@PathVariable("id") Long id){
+    public ResponseEntity<ApiResponse<Todo>> getTodoById(@PathVariable("id") Long id){
         for(Todo todo: todoList){
             if(todo.getId() == id){
-                return ResponseEntity.ok(todo);
+                return ResponseEntity
+                        .status(HttpStatus.CREATED)
+                        .body(new ApiResponse<>(todo,true,"Successfully fetched todo"));
             }
         }
-        Map<String,String> response = new HashMap<>();
-        response.put("message", "Todo Not Found");
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(null,false, "Todo not found"));
     }
-
 }
