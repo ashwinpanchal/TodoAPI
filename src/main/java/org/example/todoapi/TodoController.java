@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/todos")
@@ -16,8 +15,8 @@ public class TodoController {
 
     public TodoController(){
         todoList = new ArrayList<>();
-        todoList.add(new Todo(1,false,"Todo 1", 1));
-        todoList.add(new Todo(2,true,"Todo 2",2));
+        todoList.add(new Todo(1L,false,"Todo 1", 1));
+        todoList.add(new Todo(2L,true,"Todo 2",2));
     }
 
     @GetMapping
@@ -35,9 +34,9 @@ public class TodoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Todo>> getTodoById(@PathVariable("id") int id){
+    public ResponseEntity<ApiResponse<Todo>> getTodoById(@PathVariable("id") Long id){
         for(Todo todo : todoList){
-            if(todo.getId() == id){
+            if(Objects.equals(todo.getId(), id)){
                 return ResponseEntity
                         .status(HttpStatus.CREATED)
                         .body(new ApiResponse<>(todo,true,"Successfully fetched todo"));
@@ -49,9 +48,9 @@ public class TodoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Todo>> deleteTodo(@PathVariable int id){
+    public ResponseEntity<ApiResponse<Todo>> deleteTodo(@PathVariable Long id){
         for(int i=0;i<todoList.size();i++){
-            if(todoList.get(i).getId() == id){
+            if(Objects.equals(todoList.get(i).getId(), id)){
                 Todo deletedTodo = todoList.remove(i);
                 return ResponseEntity
                         .ok(new ApiResponse<>(deletedTodo,true, "Successfully deleted a Todo"));
@@ -62,45 +61,26 @@ public class TodoController {
                 .body(new ApiResponse<>(null,false, "Todo not found"));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Todo>> updateTodoCompletely(@PathVariable int id, @RequestBody Todo todo){
-        for(int i=0;i<todoList.size();i++){
-            if(todoList.get(i).getId() == id){
-                todo.setId(id);
-                todoList.set(i, todo);
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<Todo>> updateTodoCompletely(@PathVariable Long id, @RequestBody Todo todo){
+        for (Todo value : todoList) {
+            if (Objects.equals(value.getId(), id)) {
+                if (Objects.nonNull(todo.getTitle())) {
+                    value.setTitle(todo.getTitle());
+                }
+                if (Objects.nonNull(todo.isCompleted())) {
+                    value.setCompleted(todo.isCompleted());
+                }
+                if (Objects.nonNull(todo.getUserId())) {
+                    value.setUserId(todo.getUserId());
+                }
                 return ResponseEntity
-                        .ok(new ApiResponse<>(todo,true,"Successfully updated the todo"));
+                        .ok(new ApiResponse<>(value, true, "Successfully updated the todo"));
             }
         }
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(new ApiResponse<>(null,false, "Todo not found"));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Todo>> updateTodoPartial
-            (@PathVariable int id,
-             @RequestParam(required = false) String title,
-             @RequestParam(required = false) Boolean completed,
-             @RequestParam(required = false) Integer userId){
-        for(Todo todo : todoList) {
-            if(todo.getId() == id) {
-                if(completed != null) {
-                    todo.setCompleted(completed);
-                }
-                if(title != null) {
-                    todo.setTitle(title);
-                }
-                if(userId != null) {
-                    todo.setUserId(userId);
-                }
-                return ResponseEntity
-                        .ok(new ApiResponse<>(todo, true, "Todo updated successfully"));
-            }
-        }
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(new ApiResponse<>(null,false,"Todo not found"));
     }
 
 }
