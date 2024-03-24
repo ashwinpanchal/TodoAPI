@@ -63,7 +63,7 @@ public class TodoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Todo>> updateTodo(@PathVariable int id, @RequestBody Todo todo){
+    public ResponseEntity<ApiResponse<Todo>> updateTodoCompletely(@PathVariable int id, @RequestBody Todo todo){
         for(int i=0;i<todoList.size();i++){
             if(todoList.get(i).getId() == id){
                 todo.setId(id);
@@ -76,4 +76,31 @@ public class TodoController {
                 .status(HttpStatus.NOT_FOUND)
                 .body(new ApiResponse<>(null,false, "Todo not found"));
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<Todo>> updateTodoPartial
+            (@PathVariable int id,
+             @RequestParam(required = false) String title,
+             @RequestParam(required = false) Boolean completed,
+             @RequestParam(required = false) Integer userId){
+        for(Todo todo : todoList) {
+            if(todo.getId() == id) {
+                if(completed != null) {
+                    todo.setCompleted(completed);
+                }
+                if(title != null) {
+                    todo.setTitle(title);
+                }
+                if(userId != null) {
+                    todo.setUserId(userId);
+                }
+                return ResponseEntity
+                        .ok(new ApiResponse<>(todo, true, "Todo updated successfully"));
+            }
+        }
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(null,false,"Todo not found"));
+    }
+
 }
