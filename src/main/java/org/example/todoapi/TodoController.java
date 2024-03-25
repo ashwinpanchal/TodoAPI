@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/todos")
@@ -20,7 +21,13 @@ public class TodoController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Todo>>> getTodos(){
+    public ResponseEntity<ApiResponse<List<Todo>>> getTodos(@RequestParam(required = false) Boolean isCompleted){
+        if(Objects.equals(isCompleted,true)){
+            return ResponseEntity
+                    .ok(new ApiResponse<>
+                            (todoList.stream().filter(n-> n.isCompleted()).collect(Collectors.toList())
+                                    ,true,"Successfully fetched todo list"));
+        }
         return ResponseEntity
                 .ok(new ApiResponse<>(todoList,true,"Successfully fetched todo list"));
     }
@@ -82,5 +89,6 @@ public class TodoController {
                 .status(HttpStatus.NOT_FOUND)
                 .body(new ApiResponse<>(null,false, "Todo not found"));
     }
+
 
 }
